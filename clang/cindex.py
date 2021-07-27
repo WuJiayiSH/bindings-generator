@@ -2249,6 +2249,18 @@ class Type(Structure):
         """
         return conf.lib.clang_Type_getClassType(self)
 
+    def get_num_template_arguments(self):
+        """
+        Returns the number of template arguments for given template specialization, or -1 if type T is not a template specialization.
+        """
+        return conf.lib.clang_Type_getNumTemplateArguments(self)
+
+    def get_template_argument_as_type(self, i):
+        """
+        Returns the type template argument of a template class specialization at given index.
+        """
+        return conf.lib.clang_Type_getTemplateArgumentAsType(self, i)
+
     def get_named_type(self):
         """
         Retrieve the type named by the qualified-id.
@@ -3891,6 +3903,10 @@ functionList = [
    Type,
    Type.from_result),
 
+  ("clang_Type_getNumTemplateArguments",
+   [Type],
+   c_int),
+
   ("clang_Type_getOffsetOf",
    [Type, c_interop_string],
    c_longlong),
@@ -3898,6 +3914,11 @@ functionList = [
   ("clang_Type_getSizeOf",
    [Type],
    c_longlong),
+
+  ("clang_Type_getTemplateArgumentAsType",
+   [Type, c_uint],
+   Type,
+   Type.from_result),
 
   ("clang_Type_getCXXRefQualifier",
    [Type],

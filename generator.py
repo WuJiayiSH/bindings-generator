@@ -488,8 +488,11 @@ class NativeType(object):
                     params = filter(None, params.split(", "))
 
                     nt.is_function = True
-                    nt.ret_type = NativeType.from_string(ret_type)
-                    nt.param_types = [NativeType.from_string(string) for string in params]
+                    # take return type and parameter types from the 1st template argument of std::function
+                    assert(ntype.get_num_template_arguments() == 1)
+                    func_type = ntype.get_template_argument_as_type(0)
+                    nt.ret_type = NativeType.from_type(func_type.get_result())
+                    nt.param_types = [NativeType.from_type(arg_type) for arg_type in func_type.argument_types()]
 
         # mark argument as not supported
         if nt.name == INVALID_NATIVE_TYPE:

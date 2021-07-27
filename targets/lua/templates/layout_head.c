@@ -12,6 +12,7 @@ $macro_judgement
 #end for
 \#include "scripting/lua-bindings/manual/tolua_fix.h"
 \#include "scripting/lua-bindings/manual/LuaBasicConversions.h"
+\#include "scripting/lua-bindings/manual/CCLuaEngine.h"
 #if $cpp_headers
 #for header in $cpp_headers
 \#include "${header}"
