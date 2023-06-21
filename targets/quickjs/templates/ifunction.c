@@ -6,8 +6,7 @@ static JSValue ${signature_name}(JSContext* cx, JSValueConst thisv, int argc, JS
 #end if
 #if not $is_constructor
     ${namespaced_class_name}* cobj = JS_GetOpaque2(cx, thisv, jsb_${underlined_class_name}_class_id);
-    if (!cobj)
-        return JS_EXCEPTION;
+    JSB_PRECONDITION2( cobj, cx, JS_EXCEPTION, "${signature_name} : Invalid Native Object");
 #end if
 #if len($arguments) >= $min_args
     #set arg_count = len($arguments)
@@ -41,8 +40,7 @@ static JSValue ${signature_name}(JSContext* cx, JSValueConst thisv, int argc, JS
             #set $count = $count + 1
         #end while
         #if $arg_idx > 0
-        if (!ok)
-            return JS_EXCEPTION;
+        JSB_PRECONDITION2(ok, cx, JS_EXCEPTION, "${signature_name} : Error processing arguments");
         #end if
         #set $arg_list = ", ".join($arg_array)
         #if $is_constructor
