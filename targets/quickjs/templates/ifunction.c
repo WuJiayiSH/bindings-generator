@@ -1,15 +1,13 @@
 ## ===== instance function implementation template
-bool ${signature_name}(JSContext *cx, uint32_t argc, jsval *vp)
+static JSValue ${signature_name}(JSContext* cx, JSValueConst thisv, int argc, JSValueConst *argv)
 {
-    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
 #if len($arguments) > 0
     bool ok = true;
 #end if
 #if not $is_constructor
-    JS::RootedObject obj(cx, args.thisv().toObjectOrNull());
-    js_proxy_t *proxy = jsb_get_js_proxy(obj);
-    ${namespaced_class_name}* cobj = (${namespaced_class_name} *)(proxy ? proxy->ptr : NULL);
-    JSB_PRECONDITION2( cobj, cx, false, "${signature_name} : Invalid Native Object");
+    ${namespaced_class_name}* cobj = JS_GetOpaque2(cx, thisv, jsb_${underlined_class_name}_class_id);
+    if (!cobj)
+        return JS_EXCEPTION;
 #end if
 #if len($arguments) >= $min_args
     #set arg_count = len($arguments)
@@ -43,7 +41,8 @@ bool ${signature_name}(JSContext *cx, uint32_t argc, jsval *vp)
             #set $count = $count + 1
         #end while
         #if $arg_idx > 0
-        JSB_PRECONDITION2(ok, cx, false, "${signature_name} : Error processing arguments");
+        if (!ok)
+            return JS_EXCEPTION;
         #end if
         #set $arg_list = ", ".join($arg_array)
         #if $is_constructor
@@ -59,24 +58,20 @@ bool ${signature_name}(JSContext *cx, uint32_t argc, jsval *vp)
                 #else
         ${ret_type.get_whole_name($generator)} ret = cobj->${func_name}($arg_list);
                 #end if
-        JS::RootedValue jsret(cx);
-        ${ret_type.from_native({"generator": $generator,
+        return ${ret_type.from_native({"generator": $generator,
                                     "in_value": "ret",
                                     "out_value": "jsret",
                                     "ntype": str($ret_type),
                                     "level": 2})};
-        args.rval().set(jsret);
             #else
         cobj->${func_name}($arg_list);
-        args.rval().setUndefined();
+        return JS_UNDEFINED;
             #end if
         #end if
-        return true;
     }
         #set $arg_idx = $arg_idx + 1
     #end while
 #end if
 
-    JS_ReportError(cx, "${signature_name} : wrong number of arguments: %d, was expecting %d", argc, ${min_args});
-    return false;
+    return JS_EXCEPTION;
 }
